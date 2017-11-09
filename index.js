@@ -1,3 +1,4 @@
+'use strict';
 var hasProp = Object.prototype.hasOwnProperty;
 
 function throwsMessage(err) {
@@ -32,21 +33,29 @@ function ensureProperties(obj) {
 
 		if (typeof obj.toJSON === 'function') {
 			try {
-				return visit(obj.toJSON());
+				let result = visit(obj.toJSON());
+                seen.pop(obj);
+                return result;
 			} catch(err) {
-				return throwsMessage(err);
+				let result = throwsMessage(err);
+                seen.pop();
+                return result;
 			}
 		}
 
 		if (Array.isArray(obj)) {
-			return obj.map(visit);
+			let result = obj.map(visit);
+            seen.pop();
+            return result;
 		}
 
-		return Object.keys(obj).reduce(function(result, prop) {
+		let result = Object.keys(obj).reduce(function(result, prop) {
 			// prevent faulty defined getter properties
 			result[prop] = visit(safeGetValueFromPropertyOnObject(obj, prop));
 			return result;
 		}, {});
+        seen.pop();
+        return result;
 	};
 
 	return visit(obj);
