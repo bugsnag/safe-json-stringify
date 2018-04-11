@@ -187,7 +187,7 @@ if (typeof window !== 'undefined') {
   if (window.addEventListener && !window.attachEvent) {
     describe('DOM nodes', function () {
       it('should work with DOM nodes', function () {
-        expect(safeJsonStringify(window.document.documentElement)).toBe('{}')
+        expect(safeJsonStringify(window.document.documentElement)).toBeTruthy()
       })
       it('should work with window', function () {
         expect(JSON.parse(safeJsonStringify({ window: window }))).toBeTruthy()
