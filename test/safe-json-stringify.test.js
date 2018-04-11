@@ -183,14 +183,17 @@ describe('widely nested', function () {
 })
 
 if (typeof window !== 'undefined') {
-  describe('DOM nodes', function () {
-    it('should work with DOM nodes', function () {
-      expect(safeJsonStringify(window.document.documentElement)).toBe('{}')
+  // this test is skipped in IE8 because it doesn't perform it in a fast enough manner
+  if (window.addEventListener && !window.attachEvent) {
+    describe('DOM nodes', function () {
+      it('should work with DOM nodes', function () {
+        expect(safeJsonStringify(window.document.documentElement)).toBe('{}')
+      })
+      it('should work with window', function () {
+        expect(JSON.parse(safeJsonStringify({ window: window }))).toBeTruthy()
+      })
     })
-    it('should work with window', function () {
-      expect(JSON.parse(safeJsonStringify({ window: window }))).toBeTruthy()
-    })
-  })
+  }
 }
 
 function nest (n, m) {

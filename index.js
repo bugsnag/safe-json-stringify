@@ -74,15 +74,17 @@ function ensureProperties (obj) {
     }
 
     var result = {}
-    for (var prop in obj) {
-      if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
-      edges++
-      if (edgesExceeded()) {
-        result[prop] = MAX_EDGES_EXCEEDED_NODE
-        break
+    try {
+      for (var prop in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
+        edges++
+        if (edgesExceeded()) {
+          result[prop] = MAX_EDGES_EXCEEDED_NODE
+          break
+        }
+        result[prop] = visit(safelyGetProp(obj, prop), depth + 1)
       }
-      result[prop] = visit(safelyGetProp(obj, prop), depth + 1)
-    }
+    } catch (e) {}
     seen.pop()
     return result
   }
