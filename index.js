@@ -4,7 +4,7 @@ module.exports = function (data, replacer, space) {
 
 var MAX_DEPTH = 20
 var MAX_EDGES = 10000
-var MIN_PRESERVED_DEPTH = 10
+var MIN_PRESERVED_DEPTH = 8
 
 var MAX_EDGES_EXCEEDED_NODE = '[MAX_EDGES exceeded]'
 var MAX_DEPTH_EXCEEDED_NODE = '[MAX_DEPTH exceeded]'
