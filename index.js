@@ -3,7 +3,7 @@ module.exports = function (data, replacer, space) {
 }
 
 var MAX_DEPTH = 20
-var MAX_EDGES = 10000
+var MAX_EDGES = 25000
 var MIN_PRESERVED_DEPTH = 8
 
 var MAX_EDGES_EXCEEDED_NODE = '[MAX_EDGES exceeded]'
@@ -41,6 +41,8 @@ function ensureProperties (obj) {
       return depth > MIN_PRESERVED_DEPTH && edges > MAX_EDGES
     }
 
+    edges++
+
     if (depth === undefined) depth = 0
     if (depth > MAX_DEPTH) return MAX_DEPTH_EXCEEDED_NODE
     if (edgesExceeded()) return MAX_EDGES_EXCEEDED_NODE
@@ -51,6 +53,9 @@ function ensureProperties (obj) {
 
     if (typeof obj.toJSON === 'function') {
       try {
+        // we're not going to count this as an edge because it
+        // replaces the value of the currently visited object
+        edges--
         var fResult = visit(obj.toJSON(), depth)
         seen.pop()
         return fResult
@@ -62,7 +67,6 @@ function ensureProperties (obj) {
     if (isArray(obj)) {
       var aResult = []
       for (var i = 0, len = obj.length; i < len; i++) {
-        edges++
         if (edgesExceeded()) {
           aResult.push(MAX_EDGES_EXCEEDED_NODE)
           break
@@ -77,7 +81,6 @@ function ensureProperties (obj) {
     try {
       for (var prop in obj) {
         if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
-        edges++
         if (edgesExceeded()) {
           result[prop] = MAX_EDGES_EXCEEDED_NODE
           break
