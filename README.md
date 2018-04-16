@@ -5,7 +5,7 @@
 This is a fork of [`safe-json-stringify`](https://github.com/debitoor/safe-json-stringify) with some opinionated changes, specifically for [Bugsnag's](https://bugsnag.com) use-case:
 
 - IE8 support. Our [JS notifier](https://github.com/bugsnag/bugsnag-js) supports IE8, so all of its dependencies must use IE8 compatible APIs.
-- A hard limit on object depth/breadth. Given a deep/wide enough data structure, the original version would run out of memory or stack allocations. Values are replaced with `[MAX_DEPTH exceeded]` and `[MAX_EDGES exceeded]` in such circumstances.
+- A hard limit on object depth/breadth. Given a deep/wide enough data structure, the original version would run out of memory or stack allocations. Values are replaced with the string `...` in such circumstances.
 - Doesn't replace repeated, but non-circular references (implemented by [@MikeRalphson](https://github.com/MikeRalphson) in [their fork](https://github.com/MikeRalphson/safe-json-stringify/tree/circular))
 
 ## Installation

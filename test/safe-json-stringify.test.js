@@ -163,7 +163,7 @@ describe('deeply nested', function () {
   it('should replace objects that are nested too deeply', function () {
     var o = nest(21, 2)
     var str = safeJsonStringify(o, null, 2)
-    expect(str.indexOf('[MAX_DEPTH exceeded]')).toBeGreaterThan(1)
+    expect(str.indexOf('...')).toBeGreaterThan(1)
   })
 })
 
@@ -173,12 +173,12 @@ describe('widely nested', function () {
       o: nest(2, 2000)
     } } } } } } } } } } } } } } }
     var str = safeJsonStringify(o)
-    expect(str.indexOf('[MAX_EDGES exceeded]')).toBeGreaterThan(1)
+    expect(str.indexOf('...')).toBeGreaterThan(1)
   })
-  it('should not replace objects less than the MIN_PRESERVED_DEPTH widely', function () {
+  it('should not replace objects less than the MIN_PRESERVED_DEPTH', function () {
     var o = { a: nest(2, 2000) }
     var str = safeJsonStringify(o)
-    expect(str.indexOf('[MAX_EDGES exceeded]')).toBe(-1)
+    expect(str.indexOf('...')).toBe(-1)
   })
 })
 

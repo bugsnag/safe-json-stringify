@@ -6,8 +6,7 @@ var MAX_DEPTH = 20
 var MAX_EDGES = 25000
 var MIN_PRESERVED_DEPTH = 8
 
-var MAX_EDGES_EXCEEDED_NODE = '[MAX_EDGES exceeded]'
-var MAX_DEPTH_EXCEEDED_NODE = '[MAX_DEPTH exceeded]'
+var REPLACEMENT_NODE = '...'
 
 function throwsMessage (err) {
   return '[Throws: ' + (err ? err.message : '?') + ']'
@@ -44,8 +43,8 @@ function ensureProperties (obj) {
     edges++
 
     if (depth === undefined) depth = 0
-    if (depth > MAX_DEPTH) return MAX_DEPTH_EXCEEDED_NODE
-    if (edgesExceeded()) return MAX_EDGES_EXCEEDED_NODE
+    if (depth > MAX_DEPTH) return REPLACEMENT_NODE
+    if (edgesExceeded()) return REPLACEMENT_NODE
     if (obj === null || typeof obj !== 'object') return obj
     if (find(seen, obj)) return '[Circular]'
 
@@ -68,7 +67,7 @@ function ensureProperties (obj) {
       var aResult = []
       for (var i = 0, len = obj.length; i < len; i++) {
         if (edgesExceeded()) {
-          aResult.push(MAX_EDGES_EXCEEDED_NODE)
+          aResult.push(REPLACEMENT_NODE)
           break
         }
         aResult.push(visit(obj[i], depth + 1))
@@ -82,7 +81,7 @@ function ensureProperties (obj) {
       for (var prop in obj) {
         if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
         if (edgesExceeded()) {
-          result[prop] = MAX_EDGES_EXCEEDED_NODE
+          result[prop] = REPLACEMENT_NODE
           break
         }
         result[prop] = visit(safelyGetProp(obj, prop), depth + 1)
