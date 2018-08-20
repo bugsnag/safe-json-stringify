@@ -205,14 +205,14 @@ function nest (n, m) {
   return o
 }
 
-describe('filter options', () => {
-  it('should filter nothing by default', () => {
-    const fixture = require('./fixtures/01-example-payload.json')
+describe('filter options', function () {
+  it('should filter nothing by default', function () {
+    var fixture = require('./fixtures/01-example-payload.json')
     expect(safeJsonStringify(fixture)).toBe(JSON.stringify(fixture))
   })
 
-  it('should only filter paths that are in "filterPaths"', () => {
-    const fixture = require('./fixtures/01-example-payload.json')
+  it('should only filter paths that are in "filterPaths"', function () {
+    var fixture = require('./fixtures/01-example-payload.json')
     expect(
       safeJsonStringify(fixture, null, null, { filterKeys: [ 'subsystem' ] })
     ).toBe(JSON.stringify(fixture))
@@ -224,8 +224,8 @@ describe('filter options', () => {
     ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[FILTERED]"'))
   })
 
-  it('should work with regexes', () => {
-    const fixture = require('./fixtures/01-example-payload.json')
+  it('should work with regexes', function () {
+    var fixture = require('./fixtures/01-example-payload.json')
     expect(
       safeJsonStringify(fixture, null, null, { filterKeys: [ 'subsystem' ] })
     ).toBe(JSON.stringify(fixture))
