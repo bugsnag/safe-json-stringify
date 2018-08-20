@@ -1,5 +1,7 @@
-module.exports = function (data, replacer, space) {
-  return JSON.stringify(ensureProperties(data), replacer, space)
+module.exports = function (data, replacer, space, opts) {
+  var filterKeys = opts && opts.filterKeys ? opts.filterKeys : []
+  var filterPaths = opts && opts.filterPaths ? opts.filterPaths : []
+  return JSON.stringify(ensureProperties(data, filterKeys, filterPaths), replacer, space)
 }
 
 var MAX_DEPTH = 20
@@ -19,6 +21,22 @@ function find (haystack, needle) {
   return false
 }
 
+// returns true if the string `path` starts with any of the provided `paths`
+function isDecendent (paths, path) {
+  for (var i = 0, len = paths.length; i < len; i++) {
+    if (path.indexOf(paths[i]) === 0) return true
+  }
+  return false
+}
+
+function shouldFilter (patterns, key) {
+  for (var i = 0, len = patterns.length; i < len; i++) {
+    if (typeof patterns[i] === 'string' && patterns[i] === key) return true
+    if (patterns[i] && patterns[i].test && patterns[i].test(key)) return true
+  }
+  return false
+}
+
 function isArray (obj) {
   return Object.prototype.toString.call(obj) === '[object Array]'
 }
@@ -31,11 +49,11 @@ function safelyGetProp (obj, prop) {
   }
 }
 
-function ensureProperties (obj) {
+function ensureProperties (obj, filterKeys, filterPaths) {
   var seen = [] // store references to objects we have seen before
   var edges = 0
 
-  function visit (obj, depth) {
+  function visit (obj, depth, path) {
     function edgesExceeded () {
       return depth > MIN_PRESERVED_DEPTH && edges > MAX_EDGES
     }
@@ -55,7 +73,7 @@ function ensureProperties (obj) {
         // we're not going to count this as an edge because it
         // replaces the value of the currently visited object
         edges--
-        var fResult = visit(obj.toJSON(), depth)
+        var fResult = visit(obj.toJSON(), depth, path)
         seen.pop()
         return fResult
       } catch (err) {
@@ -70,7 +88,7 @@ function ensureProperties (obj) {
           aResult.push(REPLACEMENT_NODE)
           break
         }
-        aResult.push(visit(obj[i], depth + 1))
+        aResult.push(visit(obj[i], depth + 1, path.concat('[]')))
       }
       seen.pop()
       return aResult
@@ -80,16 +98,20 @@ function ensureProperties (obj) {
     try {
       for (var prop in obj) {
         if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
+        if (isDecendent(filterPaths, path.join('.')) && shouldFilter(filterKeys, prop)) {
+          result[prop] = '[FILTERED]'
+          continue
+        }
         if (edgesExceeded()) {
           result[prop] = REPLACEMENT_NODE
           break
         }
-        result[prop] = visit(safelyGetProp(obj, prop), depth + 1)
+        result[prop] = visit(safelyGetProp(obj, prop), depth + 1, path.concat(prop))
       }
     } catch (e) {}
     seen.pop()
     return result
   }
 
-  return visit(obj)
+  return visit(obj, 0, [])
 }

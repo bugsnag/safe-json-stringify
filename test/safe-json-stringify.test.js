@@ -204,3 +204,41 @@ function nest (n, m) {
   }
   return o
 }
+
+describe('filter options', () => {
+  it('should filter nothing by default', () => {
+    const fixture = require('./fixtures/01-example-payload.json')
+    expect(safeJsonStringify(fixture)).toBe(JSON.stringify(fixture))
+  })
+
+  it('should only filter paths that are in "filterPaths"', () => {
+    const fixture = require('./fixtures/01-example-payload.json')
+    expect(
+      safeJsonStringify(fixture, null, null, { filterKeys: [ 'subsystem' ] })
+    ).toBe(JSON.stringify(fixture))
+    expect(
+      safeJsonStringify(fixture, null, null, {
+        filterKeys: [ 'subsystem' ],
+        filterPaths: [ 'events.[].metaData' ]
+      })
+    ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[FILTERED]"'))
+  })
+
+  it('should work with regexes', () => {
+    const fixture = require('./fixtures/01-example-payload.json')
+    expect(
+      safeJsonStringify(fixture, null, null, { filterKeys: [ 'subsystem' ] })
+    ).toBe(JSON.stringify(fixture))
+    expect(
+      safeJsonStringify(fixture, null, null, {
+        filterKeys: [ /na*/, /widget(s?)added/i ],
+        filterPaths: [ 'events.[].metaData' ]
+      })
+    ).toBe(
+      JSON.stringify(fixture).replace(
+        '{"name":"fs reader","widgetsAdded":10}',
+        '{"name":"[FILTERED]","widgetsAdded":"[FILTERED]"}'
+      )
+    )
+  })
+})

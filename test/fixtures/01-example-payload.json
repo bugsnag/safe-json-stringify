@@ -1,0 +1,111 @@
+{
+  "apiKey": "d145b8e5afb56516423bc4d605e45442",
+  "notifier": {
+    "name": "Bugsnag Node",
+    "version": "1.0.0",
+    "url": "https://github.com/bugsnag/bugsnag-js"
+  },
+  "events": [
+    {
+      "payloadVersion": "4",
+      "exceptions": [
+        {
+          "errorClass": "Error",
+          "message": "ENOENT: no such file or directory, open 'does not exist'",
+          "stacktrace": [
+            {
+              "file": "scenarios/contextualize.js",
+              "method": "Object.<anonymous>",
+              "lineNumber": 12,
+              "columnNumber": 1,
+              "code": {
+                "9": "})",
+                "10": "",
+                "11": "var contextualize = bugsnagClient.getPlugin('contextualize')",
+                "12": "contextualize(function () {",
+                "13": "  fs.createReadStream('does not exist')",
+                "14": "}, {",
+                "15": "  metaData: {"
+              },
+              "inProject": true
+            },
+            {
+              "file": "module.js",
+              "method": "Module._compile",
+              "lineNumber": 409,
+              "columnNumber": 26,
+              "inProject": false
+            },
+            {
+              "file": "module.js",
+              "method": "Object.Module._extensions..js",
+              "lineNumber": 416,
+              "columnNumber": 10,
+              "inProject": false
+            },
+            {
+              "file": "module.js",
+              "method": "Module.load",
+              "lineNumber": 343,
+              "columnNumber": 32,
+              "inProject": false
+            },
+            {
+              "file": "module.js",
+              "method": "Function.Module._load",
+              "lineNumber": 300,
+              "columnNumber": 12,
+              "inProject": false
+            },
+            {
+              "file": "module.js",
+              "method": "Function.Module.runMain",
+              "lineNumber": 441,
+              "columnNumber": 10,
+              "inProject": false
+            },
+            {
+              "file": "node.js",
+              "method": "startup",
+              "lineNumber": 140,
+              "columnNumber": 18,
+              "inProject": false
+            },
+            {
+              "file": "node.js",
+              "lineNumber": 1043,
+              "columnNumber": 3,
+              "inProject": false
+            }
+          ],
+          "type": "nodejs"
+        }
+      ],
+      "severity": "error",
+      "unhandled": true,
+      "severityReason": {
+        "type": "unhandledException"
+      },
+      "app": {
+        "releaseStage": "production"
+      },
+      "device": {
+        "hostname": "cd1e0e7b700a",
+        "time": "2018-08-16T14:08:02.240Z"
+      },
+      "breadcrumbs": [
+
+      ],
+      "user": {
+      },
+      "metaData": {
+        "subsystem": {
+          "name": "fs reader",
+          "widgetsAdded": 10
+        }
+      },
+      "request": {
+      }
+    }
+  ]
+}
