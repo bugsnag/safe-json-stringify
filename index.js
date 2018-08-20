@@ -22,7 +22,7 @@ function find (haystack, needle) {
 }
 
 // returns true if the string `path` starts with any of the provided `paths`
-function isDecendent (paths, path) {
+function isDescendent (paths, path) {
   for (var i = 0, len = paths.length; i < len; i++) {
     if (path.indexOf(paths[i]) === 0) return true
   }
@@ -98,7 +98,7 @@ function ensureProperties (obj, filterKeys, filterPaths) {
     try {
       for (var prop in obj) {
         if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
-        if (isDecendent(filterPaths, path.join('.')) && shouldFilter(filterKeys, prop)) {
+        if (isDescendent(filterPaths, path.join('.')) && shouldFilter(filterKeys, prop)) {
           result[prop] = '[FILTERED]'
           continue
         }
