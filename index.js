@@ -32,7 +32,7 @@ function isDescendent (paths, path) {
 function shouldFilter (patterns, key) {
   for (var i = 0, len = patterns.length; i < len; i++) {
     if (typeof patterns[i] === 'string' && patterns[i] === key) return true
-    if (patterns[i] && patterns[i].test && patterns[i].test(key)) return true
+    if (patterns[i] && typeof patterns[i].test === 'function' && patterns[i].test(key)) return true
   }
   return false
 }
