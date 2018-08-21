@@ -221,7 +221,7 @@ describe('filter options', function () {
         filterKeys: [ 'subsystem' ],
         filterPaths: [ 'events.[].metaData' ]
       })
-    ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[FILTERED]"'))
+    ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[Filtered]"'))
   })
 
   it('should work with regexes', function () {
@@ -237,7 +237,7 @@ describe('filter options', function () {
     ).toBe(
       JSON.stringify(fixture).replace(
         '{"name":"fs reader","widgetsAdded":10}',
-        '{"name":"[FILTERED]","widgetsAdded":"[FILTERED]"}'
+        '{"name":"[Filtered]","widgetsAdded":"[Filtered]"}'
       )
     )
   })

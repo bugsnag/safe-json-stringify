@@ -102,7 +102,7 @@ function prepareObjForSerialization (obj, filterKeys, filterPaths) {
       for (var prop in obj) {
         if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
         if (isDescendent(filterPaths, path.join('.')) && shouldFilter(filterKeys, prop)) {
-          result[prop] = '[FILTERED]'
+          result[prop] = '[Filtered]'
           continue
         }
         if (edgesExceeded()) {
