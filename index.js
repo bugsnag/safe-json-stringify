@@ -1,7 +1,11 @@
 module.exports = function (data, replacer, space, opts) {
   var filterKeys = opts && opts.filterKeys ? opts.filterKeys : []
   var filterPaths = opts && opts.filterPaths ? opts.filterPaths : []
-  return JSON.stringify(ensureProperties(data, filterKeys, filterPaths), replacer, space)
+  return JSON.stringify(
+    prepareObjForSerialization(data, filterKeys, filterPaths),
+    replacer,
+    space
+  )
 }
 
 var MAX_DEPTH = 20
@@ -49,19 +53,18 @@ function safelyGetProp (obj, prop) {
   }
 }
 
-function ensureProperties (obj, filterKeys, filterPaths) {
+function prepareObjForSerialization (obj, filterKeys, filterPaths) {
   var seen = [] // store references to objects we have seen before
   var edges = 0
 
-  function visit (obj, depth, path) {
+  function visit (obj, path) {
     function edgesExceeded () {
-      return depth > MIN_PRESERVED_DEPTH && edges > MAX_EDGES
+      return path.length > MIN_PRESERVED_DEPTH && edges > MAX_EDGES
     }
 
     edges++
 
-    if (depth === undefined) depth = 0
-    if (depth > MAX_DEPTH) return REPLACEMENT_NODE
+    if (path.length > MAX_DEPTH) return REPLACEMENT_NODE
     if (edgesExceeded()) return REPLACEMENT_NODE
     if (obj === null || typeof obj !== 'object') return obj
     if (find(seen, obj)) return '[Circular]'
