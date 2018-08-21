@@ -76,7 +76,7 @@ function prepareObjForSerialization (obj, filterKeys, filterPaths) {
         // we're not going to count this as an edge because it
         // replaces the value of the currently visited object
         edges--
-        var fResult = visit(obj.toJSON(), depth, path)
+        var fResult = visit(obj.toJSON(), path)
         seen.pop()
         return fResult
       } catch (err) {
@@ -91,7 +91,7 @@ function prepareObjForSerialization (obj, filterKeys, filterPaths) {
           aResult.push(REPLACEMENT_NODE)
           break
         }
-        aResult.push(visit(obj[i], depth + 1, path.concat('[]')))
+        aResult.push(visit(obj[i], path.concat('[]')))
       }
       seen.pop()
       return aResult
@@ -109,12 +109,12 @@ function prepareObjForSerialization (obj, filterKeys, filterPaths) {
           result[prop] = REPLACEMENT_NODE
           break
         }
-        result[prop] = visit(safelyGetProp(obj, prop), depth + 1, path.concat(prop))
+        result[prop] = visit(safelyGetProp(obj, prop), path.concat(prop))
       }
     } catch (e) {}
     seen.pop()
     return result
   }
 
-  return visit(obj, 0, [])
+  return visit(obj, [])
 }
