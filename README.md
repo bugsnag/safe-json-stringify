@@ -7,6 +7,7 @@ This is a fork of [`safe-json-stringify`](https://github.com/debitoor/safe-json-
 - IE8 support. Our [JS notifier](https://github.com/bugsnag/bugsnag-js) supports IE8, so all of its dependencies must use IE8 compatible APIs.
 - A hard limit on object depth/breadth. Given a deep/wide enough data structure, the original version would run out of memory or stack allocations. Values are replaced with the string `...` in such circumstances.
 - Doesn't replace repeated, but non-circular references (implemented by [@MikeRalphson](https://github.com/MikeRalphson) in [their fork](https://github.com/MikeRalphson/safe-json-stringify/tree/circular))
+- Adds the ability to apply key-based filters to specific subtrees
 
 ## Installation
 
@@ -16,11 +17,54 @@ npm install @bugsnag/safe-json-stringify
 
 ## Usage
 
-The API is exactly the same as `JSON.stringify`
+The API is the same as `JSON.stringify`, with an additional `options` object:
 
 ```js
-JSON.stringify(obj, [optional replacer], [optional spaces])
+stringify(obj, [optional replacer], [optional spaces], [options])
 ```
+
+- `options.filterKeys`: a list of keys whose value should be replaced with the string `[FILTERED]`. Keys can be strings for exact matches, or regexes for partial or pattern matches. The array can contain a mixture of both.
+- `options.filterPaths`: a list of paths where the `filterKeys` option will be applied. The format of these strings are key names separated by `.` and if the property is an array, it is represented with `[]`. For example: `events.[].metaData`.
+
+### Example
+
+```js
+var stringify = require('@bugsnag/safe-json-stringify')
+stringify({
+  api_key: 'd145b8e5afb56516423bc4d605e45442',
+  events: [
+    {
+      errorMessage: 'Failed load tickets',
+      errorClass: 'CheckoutError',
+      user: {
+        name: 'Jim Bug',
+        email: 'jim@bugsnag.com',
+        api_key: '245b39ebd3cd3992e85bffc81c045924'
+      }
+    }
+  ]
+}, null, 2, {
+  filterKeys: [ 'api_key' ],
+  filterPaths: [ 'events.[].user' ]
+})
+
+// yields the following json:
+// {
+//   "api_key": "d145b8e5afb56516423bc4d605e45442",
+//   "events": [
+//     {
+//       "errorMessage": "Failed load tickets",
+//       "errorClass": "CheckoutError",
+//       "user": {
+//         "name": "Jim Bug",
+//         "email": "jim@bugsnag.com",
+//         "api_key": "[FILTERED]"
+//       }
+//     }
+//   ]
+// }
+```
+
 
 ## License
 
