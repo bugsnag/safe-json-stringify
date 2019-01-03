@@ -14,6 +14,11 @@ var MIN_PRESERVED_DEPTH = 8
 
 var REPLACEMENT_NODE = '...'
 
+function isError (o) {
+  return o instanceof Error ||
+    /^\[object (Error|(Dom)?Exception)\]$/.test(Object.prototype.toString.call(o))
+}
+
 function throwsMessage (err) {
   return '[Throws: ' + (err ? err.message : '?') + ']'
 }
@@ -82,6 +87,14 @@ function prepareObjForSerialization (obj, filterKeys, filterPaths) {
       } catch (err) {
         return throwsMessage(err)
       }
+    }
+
+    var er = isError(obj)
+    if (er) {
+      edges--
+      var eResult = visit({ name: obj.name, message: obj.message }, path)
+      seen.pop()
+      return eResult
     }
 
     if (isArray(obj)) {

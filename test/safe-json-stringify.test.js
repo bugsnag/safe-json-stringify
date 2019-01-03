@@ -53,6 +53,13 @@ describe('arrays', function () {
   })
 })
 
+describe('errors', function () {
+  it('should extract meaningful error properties', function () {
+    var err = new Error('hello')
+    expect(safeJsonStringify(err)).toBe('{"name":"Error","message":"hello"}')
+  })
+})
+
 describe('throwing toJSON', function () {
   it('works when obj.toJSON() throws an error', function () {
     var obj = {
@@ -176,7 +183,7 @@ describe('widely nested', function () {
     expect(str.indexOf('...')).toBeGreaterThan(1)
   })
   it('should not replace objects less than the MIN_PRESERVED_DEPTH', function () {
-    var o = { a: nest(2, 2000) }
+    var o = { a: nest(2, 1500) }
     var str = safeJsonStringify(o)
     expect(str.indexOf('...')).toBe(-1)
   })
