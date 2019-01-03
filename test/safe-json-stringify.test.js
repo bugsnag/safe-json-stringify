@@ -183,7 +183,7 @@ describe('widely nested', function () {
     expect(str.indexOf('...')).toBeGreaterThan(1)
   })
   it('should not replace objects less than the MIN_PRESERVED_DEPTH', function () {
-    var o = { a: nest(2, 2000) }
+    var o = { a: nest(2, 1500) }
     var str = safeJsonStringify(o)
     expect(str.indexOf('...')).toBe(-1)
   })
