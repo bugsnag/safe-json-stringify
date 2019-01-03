@@ -53,6 +53,13 @@ describe('arrays', function () {
   })
 })
 
+describe('errors', function () {
+  it('should extract meaningful error properties', function () {
+    var err = new Error('hello')
+    expect(safeJsonStringify(err)).toBe('{"name":"Error","message":"hello"}')
+  })
+})
+
 describe('throwing toJSON', function () {
   it('works when obj.toJSON() throws an error', function () {
     var obj = {
