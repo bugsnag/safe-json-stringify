@@ -23,8 +23,8 @@ The API is the same as `JSON.stringify`, with an additional `options` object:
 stringify(obj, [optional replacer], [optional spaces], [options])
 ```
 
-- `options.filterKeys`: a list of keys whose value should be replaced with the string `[FILTERED]`. Keys can be strings for exact matches, or regexes for partial or pattern matches. The array can contain a mixture of both.
-- `options.filterPaths`: a list of paths where the `filterKeys` option will be applied. The format of these strings are key names separated by `.` and if the property is an array, it is represented with `[]`. For example: `events.[].metaData`.
+- `options.redactedKeys`: a list of keys whose value should be replaced with the string `[REDACTED]`. Keys can be strings for exact matches, or regexes for partial or pattern matches. The array can contain a mixture of both.
+- `options.redactedPaths`: a list of paths where the `redactedKeys` option will be applied. The format of these strings are key names separated by `.` and if the property is an array, it is represented with `[]`. For example: `events.[].metaData`.
 
 ### Example
 
@@ -44,8 +44,8 @@ stringify({
     }
   ]
 }, null, 2, {
-  filterKeys: [ 'api_key' ],
-  filterPaths: [ 'events.[].user' ]
+  redactedKeys: [ 'api_key' ],
+  redactedPaths: [ 'events.[].user' ]
 })
 
 // yields the following json:
@@ -58,7 +58,7 @@ stringify({
 //       "user": {
 //         "name": "Jim Bug",
 //         "email": "jim@bugsnag.com",
-//         "api_key": "[FILTERED]"
+//         "api_key": "[REDACTED]"
 //       }
 //     }
 //   ]

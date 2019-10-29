@@ -212,39 +212,39 @@ function nest (n, m) {
   return o
 }
 
-describe('filter options', function () {
-  it('should filter nothing by default', function () {
+describe('redaction options', function () {
+  it('should redact nothing by default', function () {
     var fixture = require('./fixtures/01-example-payload.json')
     expect(safeJsonStringify(fixture)).toBe(JSON.stringify(fixture))
   })
 
-  it('should only filter paths that are in "filterPaths"', function () {
+  it('should only redact paths that are in "redactedPaths"', function () {
     var fixture = require('./fixtures/01-example-payload.json')
     expect(
-      safeJsonStringify(fixture, null, null, { filterKeys: [ 'subsystem' ] })
+      safeJsonStringify(fixture, null, null, { redactedKeys: [ 'subsystem' ] })
     ).toBe(JSON.stringify(fixture))
     expect(
       safeJsonStringify(fixture, null, null, {
-        filterKeys: [ 'subsystem' ],
-        filterPaths: [ 'events.[].metaData' ]
+        redactedKeys: [ 'subsystem' ],
+        redactedPaths: [ 'events.[].metaData' ]
       })
-    ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[Filtered]"'))
+    ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[REDACTED]"'))
   })
 
   it('should work with regexes', function () {
     var fixture = require('./fixtures/01-example-payload.json')
     expect(
-      safeJsonStringify(fixture, null, null, { filterKeys: [ 'subsystem' ] })
+      safeJsonStringify(fixture, null, null, { redactedKeys: [ 'subsystem' ] })
     ).toBe(JSON.stringify(fixture))
     expect(
       safeJsonStringify(fixture, null, null, {
-        filterKeys: [ /na*/, /widget(s?)added/i ],
-        filterPaths: [ 'events.[].metaData' ]
+        redactedKeys: [ /na*/, /widget(s?)added/i ],
+        redactedPaths: [ 'events.[].metaData' ]
       })
     ).toBe(
       JSON.stringify(fixture).replace(
         '{"name":"fs reader","widgetsAdded":10}',
-        '{"name":"[Filtered]","widgetsAdded":"[Filtered]"}'
+        '{"name":"[REDACTED]","widgetsAdded":"[REDACTED]"}'
       )
     )
   })

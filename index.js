@@ -1,8 +1,8 @@
 module.exports = function (data, replacer, space, opts) {
-  var filterKeys = opts && opts.filterKeys ? opts.filterKeys : []
-  var filterPaths = opts && opts.filterPaths ? opts.filterPaths : []
+  var redactedKeys = opts && opts.redactedKeys ? opts.redactedKeys : []
+  var redactedPaths = opts && opts.redactedPaths ? opts.redactedPaths : []
   return JSON.stringify(
-    prepareObjForSerialization(data, filterKeys, filterPaths),
+    prepareObjForSerialization(data, redactedKeys, redactedPaths),
     replacer,
     space
   )
@@ -38,7 +38,7 @@ function isDescendent (paths, path) {
   return false
 }
 
-function shouldFilter (patterns, key) {
+function shouldRedact (patterns, key) {
   for (var i = 0, len = patterns.length; i < len; i++) {
     if (typeof patterns[i] === 'string' && patterns[i] === key) return true
     if (patterns[i] && typeof patterns[i].test === 'function' && patterns[i].test(key)) return true
@@ -58,7 +58,7 @@ function safelyGetProp (obj, prop) {
   }
 }
 
-function prepareObjForSerialization (obj, filterKeys, filterPaths) {
+function prepareObjForSerialization (obj, redactedKeys, redactedPaths) {
   var seen = [] // store references to objects we have seen before
   var edges = 0
 
@@ -114,8 +114,8 @@ function prepareObjForSerialization (obj, filterKeys, filterPaths) {
     try {
       for (var prop in obj) {
         if (!Object.prototype.hasOwnProperty.call(obj, prop)) continue
-        if (isDescendent(filterPaths, path.join('.')) && shouldFilter(filterKeys, prop)) {
-          result[prop] = '[Filtered]'
+        if (isDescendent(redactedPaths, path.join('.')) && shouldRedact(redactedKeys, prop)) {
+          result[prop] = '[REDACTED]'
           continue
         }
         if (edgesExceeded()) {
