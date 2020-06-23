@@ -231,6 +231,21 @@ describe('redaction options', function () {
     ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[REDACTED]"'))
   })
 
+  it('should ignore case when redacting keys', function () {
+    var fixture = require('./fixtures/01-example-payload.json')
+
+    expect(
+      safeJsonStringify(fixture, null, null, { redactedKeys: [ 'SuBsYsTeM' ] })
+    ).toBe(JSON.stringify(fixture))
+
+    expect(
+      safeJsonStringify(fixture, null, null, {
+        redactedKeys: [ 'SuBsYsTeM' ],
+        redactedPaths: [ 'events.[].metaData' ]
+      })
+    ).toBe(JSON.stringify(fixture).replace('{"name":"fs reader","widgetsAdded":10}', '"[REDACTED]"'))
+  })
+
   it('should work with regexes', function () {
     var fixture = require('./fixtures/01-example-payload.json')
     expect(
