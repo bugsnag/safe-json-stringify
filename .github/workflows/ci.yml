@@ -9,6 +9,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-20.04
+    environment: CI
     steps:
       - uses: actions/setup-node@v2
         with:
