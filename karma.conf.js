@@ -4,8 +4,6 @@ const MAX_TIMEOUT = 2 * MINUTE_IN_MS
 const CI_BS_CONF = {
   video: false,
   startTunnel: false,
-  tunnelIdentifier: process.env.BROWSERSTACK_LOCAL_IDENTIFIER,
-  project: process.env.TRAVIS_REPO_SLUG + '#' + process.env.TRAVIS_BRANCH
 }
 
 module.exports = function (config) {
@@ -17,7 +15,7 @@ module.exports = function (config) {
       transform: [],
       plugin: []
     },
-    browserStack: process.env.TRAVIS ? CI_BS_CONF : { startTunnel: true, video: false },
+    browserStack: process.env.CI ? CI_BS_CONF : { startTunnel: true, video: false },
     files: [
       'test/**.js'
     ],
