@@ -23,13 +23,13 @@
   "author": "Debitoor",
   "license": "MIT",
   "devDependencies": {
-    "browserify": "^16.2.0",
-    "jasmine-core": "^2.8.0",
-    "karma": "^2.0.0",
-    "karma-browserify": "^5.2.0",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-jasmine": "^1.1.1",
-    "standard": "^11.0.1",
-    "watchify": "^3.11.0"
+    "browserify": "^17.0.0",
+    "jasmine-core": "^5.1.1",
+    "karma": "^6.4.2",
+    "karma-browserify": "^8.1.0",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-jasmine": "^5.1.0",
+    "standard": "^17.1.0",
+    "watchify": "^4.0.0"
   }
 }
