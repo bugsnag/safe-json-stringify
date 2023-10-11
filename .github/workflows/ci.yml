@@ -11,6 +11,3 @@ jobs:
         uses: actions/checkout@v4
       - run: npm install
       - run: npm test
-        env:
-          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
