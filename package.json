@@ -14,6 +14,7 @@
   "homepage": "https://github.com/bugsnag/safe-json-stringify",
   "description": "Prevent defined property getters from throwing errors",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "postversion": "git push && git push --tags",
     "preversion": "npm test",
