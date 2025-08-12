@@ -6,7 +6,8 @@
     "url": "git@github.com:bugsnag/safe-json-stringify.git"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "types"
   ],
   "bugs": {
     "url": "https://github.com/bugsnag/safe-json-stringify/issues"
