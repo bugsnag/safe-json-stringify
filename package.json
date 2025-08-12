@@ -6,7 +6,8 @@
     "url": "git@github.com:bugsnag/safe-json-stringify.git"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "types"
   ],
   "bugs": {
     "url": "https://github.com/bugsnag/safe-json-stringify/issues"
@@ -14,6 +15,7 @@
   "homepage": "https://github.com/bugsnag/safe-json-stringify",
   "description": "Prevent defined property getters from throwing errors",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "postversion": "git push && git push --tags",
     "preversion": "npm test",
