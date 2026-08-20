@@ -7,17 +7,20 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04 #ubuntu-latest is a floating label — pinning ensures reproducible, stable builds across matrix runs
+    runs-on: ubuntu-24.04 # ubuntu-latest is a floating label — pinning ensures reproducible, stable builds across matrix runs
     strategy:
       matrix:
-        node: [12, 14, 16, 18, 20, 22]
+        node: [14, 16, 18, 20, 22] # removed Node 12: EOL since April 2022, not supported on ubuntu-24.04, and ships with npm v6 which cannot parse lockfileVersion 2/3
     steps:
-      - name: Checkout PR branch #The repo must be checked out before node is configured; setup-node may read .nvmrc / package.json engines from the repo
+      - name: Checkout PR branch # the repo must be checked out before node is configured; setup-node may read .nvmrc / package.json engines from the repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm ci #npm ci does a clean install from package-lock.json, ensuring deterministic dependency resolution in CI
+      - name: Upgrade npm # Node 14 ships with npm v6 which cannot parse lockfileVersion 2/3 lockfiles — upgrade to latest npm first
+        run: npm install -g npm@latest
+
+      - run: npm ci # npm ci does a clean install from package-lock.json, ensuring deterministic dependency resolution in CI
       - run: npm test
