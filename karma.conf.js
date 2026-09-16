@@ -4,7 +4,7 @@ const MAX_TIMEOUT = 2 * MINUTE_IN_MS
 module.exports = function (config) {
   config.set({
     basePath: '',
-    frameworks: [ 'browserify', 'jasmine' ],
+    frameworks: ['browserify', 'jasmine'],
     browserify: {
       debug: true,
       transform: [],
@@ -14,14 +14,14 @@ module.exports = function (config) {
       'test/**.js'
     ],
     preprocessors: {
-      'test/**.js': [ 'browserify' ]
+      'test/**.js': ['browserify']
     },
-    reporters: [ 'progress' ],
+    reporters: ['progress'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: [ 'ChromeHeadless' ],
+    browsers: ['ChromeHeadless'],
     concurrency: 1,
     captureTimeout: MAX_TIMEOUT,
     browserDisconnectTimeout: MAX_TIMEOUT,
