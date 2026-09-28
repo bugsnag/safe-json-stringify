@@ -37,6 +37,7 @@
   "overrides": {
     "external-editor": {
       "tmp": "0.2.7"
-    }
+    },
+    "js-yaml": "^3.15.2"
   }
 }
