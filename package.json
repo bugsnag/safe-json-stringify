@@ -35,6 +35,8 @@
     "watchify": "^4.0.0"
   },
   "overrides": {
+    "ajv": "^6.12.3",
+    "ajv-keywords": "^3.5.2",
     "external-editor": {
       "tmp": "0.2.7"
     },
