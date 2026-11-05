@@ -1,4 +1,4 @@
-/* global describe, it, expect */
+/* global describe, it, expect, globalThis */
 
 var safeJsonStringify = require('../')
 
@@ -279,6 +279,10 @@ describe('maxBytes', function () {
     expect(error.code).toBe('ERR_JSON_SIZE')
   }
 
+  function setToJSON (target, hook) {
+    Object.defineProperty(target, 'toJSON', { value: hook, writable: true, configurable: true })
+  }
+
   it('supports feature detection and preserves unbounded behavior', function () {
     expect(safeJsonStringify.supportsMaxBytes).toBe(true)
     expect(safeJsonStringify({ value: 1 }, null, null, null)).toBe('{"value":1}')
@@ -330,6 +334,124 @@ describe('maxBytes', function () {
   it('does not swallow budget errors inside toJSON or object preparation', function () {
     expectSizeError(function () { bounded({ toJSON: function () { return { nested: new Array(1001).join('x') } } }, 100) })
     expectSizeError(function () { bounded({ nested: { deep: new Array(1001).join('x') } }, 100) })
+  })
+
+  it('budgets function toJSON results at the root and inside objects and arrays', function () {
+    var value = function () {}
+    value.toJSON = function () { return new Array(10001).join('x') }
+    expect(safeJsonStringify({ f: value }).length).toBe(10008)
+    expectSizeError(function () { bounded(value, 100) })
+    expectSizeError(function () { bounded({ f: value }, 100) })
+    expectSizeError(function () { bounded([value], 100) })
+
+    value.toJSON = function (key) { return key }
+    expect(bounded(value, 2)).toBe('""')
+    expect(bounded({ f: value }, 9)).toBe('{"f":"f"}')
+    expect(bounded([value], 5)).toBe('["0"]')
+  })
+
+  it('omits ordinary functions without retaining callable values for JSON.stringify', function () {
+    var value = function () {}
+    expect(bounded(value, 100)).toBeUndefined()
+    expect(bounded({ f: value }, 100)).toBe('{}')
+    expect(bounded([value], 6)).toBe('[null]')
+    expect(safeJsonStringify(value)).toBeUndefined()
+    expect(safeJsonStringify({ f: value })).toBe('{}')
+    expect(safeJsonStringify([value])).toBe('[null]')
+  })
+
+  it('budgets hooks on boxed primitives', function () {
+    var values = [Object('x'), Object(1), Object(true)]
+    values.forEach(function (value) {
+      value.toJSON = function () { return new Array(1001).join('x') }
+      expectSizeError(function () { bounded({ value: value }, 100) })
+      value.toJSON = function () { return 'small' }
+      expect(bounded(value, 7)).toBe('"small"')
+    })
+  })
+
+  it('prevents inherited toJSON from running again on prepared objects', function () {
+    var calls = 0
+    setToJSON(Object.prototype, function () {
+      calls++
+      if (calls > 1) return new Array(1001).join('x')
+      return Object.create(null)
+    })
+    try {
+      expect(bounded({}, 2)).toBe('{}')
+      expect(calls).toBe(1)
+    } finally {
+      delete Object.prototype.toJSON
+    }
+  })
+
+  it('prevents inherited toJSON from running again on prepared arrays', function () {
+    var calls = 0
+    setToJSON(Array.prototype, function () {
+      calls++
+      if (calls > 1) return new Array(1001).join('x')
+      return {}
+    })
+    var value = { toJSON: function () {
+      delete Array.prototype.toJSON
+      var result = []
+      Object.defineProperty(result, '0', { get: function () {
+        setToJSON(Array.prototype, function () { return new Array(1001).join('x') })
+        return 'x'
+      } })
+      return result
+    } }
+    try {
+      expect(bounded([], 2)).toBe('{}')
+      expect(calls).toBe(1)
+      expect(bounded(value, 5)).toBe('["x"]')
+    } finally {
+      delete Array.prototype.toJSON
+    }
+  })
+
+  it('keeps __proto__ as an ordinary bounded property', function () {
+    var value = Object.create(null)
+    Object.defineProperty(value, '__proto__', { value: { value: 1 }, enumerable: true })
+    var json = '{"__proto__":{"value":1}}'
+    expect(bounded(value, json.length)).toBe(json)
+    expectSizeError(function () { bounded(value, json.length - 1) })
+  })
+
+  it('budgets BigInt hooks and preserves unsupported BigInt errors', function () {
+    var bigint = typeof globalThis !== 'undefined' && globalThis.BigInt
+    if (!bigint) return
+    var value = bigint(1)
+    expect(function () { bounded(value, 100) }).toThrowError(TypeError)
+    expect(function () { bounded({ value: value }, 100) }).toThrowError(TypeError)
+    expect(function () { bounded([value], 100) }).toThrowError(TypeError)
+    bigint.prototype.toJSON = function () { return new Array(1001).join('x') }
+    try {
+      expectSizeError(function () { bounded(value, 100) })
+      expectSizeError(function () { bounded({ value: value }, 100) })
+      expectSizeError(function () { bounded([value], 100) })
+      expectSizeError(function () { bounded(Object(value), 100) })
+      bigint.prototype.toJSON = function () { return 'small' }
+      expect(bounded(value, 7)).toBe('"small"')
+      expect(bounded(Object(value), 7)).toBe('"small"')
+    } finally {
+      delete bigint.prototype.toJSON
+    }
+  })
+
+  it('ignores hooks on primitive symbols and budgets hooks on boxed symbols', function () {
+    var symbol = typeof globalThis !== 'undefined' && globalThis.Symbol
+    if (!symbol) return
+    var value = symbol('value')
+    symbol.prototype.toJSON = function () { return new Array(1001).join('x') }
+    try {
+      expect(bounded(value, 100)).toBeUndefined()
+      expect(bounded({ value: value }, 100)).toBe('{}')
+      expect(bounded([value], 6)).toBe('[null]')
+      expectSizeError(function () { bounded(Object(value), 100) })
+    } finally {
+      delete symbol.prototype.toJSON
+    }
   })
 
   it('preserves circular and throwing-getter behavior within the budget', function () {

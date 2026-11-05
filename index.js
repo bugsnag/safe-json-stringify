@@ -63,12 +63,12 @@ function prepareObjForSerialization (obj, redactedKeys, redactedPaths, maxBytes)
   var seen = [] // store references to objects we have seen before
   var edges = 0
   var bytes = 0
-  var sizeError
+  var preparationError
 
   function exceed () {
-    sizeError = new RangeError('JSON payload exceeds maxBytes')
-    sizeError.code = 'ERR_JSON_SIZE'
-    throw sizeError
+    preparationError = new RangeError('JSON payload exceeds maxBytes')
+    preparationError.code = 'ERR_JSON_SIZE'
+    throw preparationError
   }
 
   function take (count) {
@@ -103,12 +103,12 @@ function prepareObjForSerialization (obj, redactedKeys, redactedPaths, maxBytes)
   }
 
   function thrown (err) {
-    if (sizeError && err === sizeError) throw err
+    if (preparationError && err === preparationError) throw err
     if (maxBytes !== undefined && err && typeof err.message === 'string' && err.message.length > maxBytes - bytes) exceed()
     return throwsMessage(err)
   }
 
-  function visit (obj, path, inArray) {
+  function visit (obj, path, inArray, key) {
     function edgesExceeded () {
       return path.length > MIN_PRESERVED_DEPTH && edges > MAX_EDGES
     }
@@ -117,7 +117,10 @@ function prepareObjForSerialization (obj, redactedKeys, redactedPaths, maxBytes)
 
     if (path.length > MAX_DEPTH) return primitive(REPLACEMENT_NODE)
     if (edgesExceeded()) return primitive(REPLACEMENT_NODE)
-    if (obj === null || typeof obj !== 'object') return primitive(obj, inArray)
+    // JSON.stringify also invokes toJSON on functions and primitive BigInts.
+    var valueType = typeof obj
+    var boundedHook = maxBytes !== undefined && (valueType === 'function' || valueType === 'bigint')
+    if (obj === null || (valueType !== 'object' && !boundedHook)) return primitive(obj, inArray)
     if (find(seen, obj)) return primitive('[Circular]')
 
     seen.push(obj)
@@ -127,12 +130,22 @@ function prepareObjForSerialization (obj, redactedKeys, redactedPaths, maxBytes)
         // we're not going to count this as an edge because it
         // replaces the value of the currently visited object
         edges--
-        var fResult = visit(obj.toJSON(), path, inArray)
+        var jsonValue = boundedHook ? obj.toJSON(key || '') : obj.toJSON()
+        var fResult = visit(jsonValue, path, inArray, key)
         seen.pop()
         return fResult
       } catch (err) {
         return primitive(thrown(err))
       }
+    }
+
+    if (boundedHook) {
+      seen.pop()
+      if (valueType === 'bigint') {
+        preparationError = new TypeError('Cannot serialize a BigInt without toJSON')
+        throw preparationError
+      }
+      return primitive(undefined, inArray)
     }
 
     var er = isError(obj)
@@ -146,20 +159,22 @@ function prepareObjForSerialization (obj, redactedKeys, redactedPaths, maxBytes)
     if (isArray(obj)) {
       take(2)
       var aResult = []
+      // Prepared containers must not invoke inherited hooks after the budget check.
+      if (maxBytes !== undefined) Object.defineProperty(aResult, 'toJSON', { value: undefined })
       for (var i = 0, len = obj.length; i < len; i++) {
         if (i) take(1)
         if (edgesExceeded()) {
           aResult.push(primitive(REPLACEMENT_NODE))
           break
         }
-        aResult.push(visit(obj[i], path.concat('[]'), true))
+        aResult.push(visit(obj[i], path.concat('[]'), true, String(i)))
       }
       seen.pop()
       return aResult
     }
 
     take(2)
-    var result = {}
+    var result = maxBytes === undefined ? {} : Object.create(null)
     var properties = 0
     try {
       for (var prop in obj) {
@@ -181,10 +196,10 @@ function prepareObjForSerialization (obj, redactedKeys, redactedPaths, maxBytes)
         } catch (err) {
           value = thrown(err)
         }
-        result[prop] = visit(value, path.concat(prop))
+        result[prop] = visit(value, path.concat(prop), false, prop)
       }
     } catch (e) {
-      if (sizeError && e === sizeError) throw e
+      if (preparationError && e === preparationError) throw e
     }
     seen.pop()
     return result
