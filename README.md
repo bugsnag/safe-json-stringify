@@ -25,6 +25,9 @@ stringify(obj, [optional replacer], [optional spaces], [options])
 
 - `options.redactedKeys`: a list of keys whose value should be replaced with the string `[REDACTED]`. Keys can be strings for case insensitive matches, or regexes for partial or pattern matches. The array can contain a mixture of both.
 - `options.redactedPaths`: a list of paths where the `redactedKeys` option will be applied. The format of these strings are key names separated by `.` and if the property is an array, it is represented with `[]`. For example: `events.[].metaData`.
+- `options.maxBytes`: an optional positive safe integer limiting compact JSON to this many UTF-8 bytes. Exceeding the budget throws a `RangeError` with `code: 'ERR_JSON_SIZE'`. The budget is checked while preparing the object, before allocating the full JSON string. It counts escaped strings, property names, containers and array entries, and applies after redaction. It conservatively counts object properties that JSON would omit and lone surrogates that older engines may encode differently. It cannot be combined with `replacer` or `space`. `stringify.supportsMaxBytes` is `true` in versions supporting this option.
+
+The byte budget bounds the values this library copies and its JSON output, including large strings and shallow collections. It cannot bound memory or CPU already used to construct the input, arbitrary work performed by getters, proxies and `toJSON` methods, or the JavaScript engine's allocation while enumerating properties or flattening strings. Such methods run synchronously before their returned value can be checked. This is an admission upper bound, not an absolute heap bound for arbitrary objects.
 
 ### Example
 

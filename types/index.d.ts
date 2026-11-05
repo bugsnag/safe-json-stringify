@@ -9,15 +9,21 @@ declare module '@bugsnag/safe-json-stringify' {
      * @param options - An object containing options for redacting keys and paths.
      * @param options.redactedKeys - An array of keys or regular expressions that should be redacted from the output.
      * @param options.redactedPaths - An array of strings representing paths to properties that should be redacted from the output.
+     * @param options.maxBytes - Optional conservative UTF-8 byte budget for compact JSON; throws ERR_JSON_SIZE when exceeded. Cannot be combined with replacer or space.
      * @returns The JSON string representation of the value.
      */
-    export default function stringify(
+    function stringify(
         value: any,
-        replacer?: ((this: any, key: string, value: any) => any) | undefined, 
-        space?: string | number | undefined,
+        replacer?: ((this: any, key: string, value: any) => any) | null | undefined,
+        space?: string | number | null | undefined,
         options?: {
             redactedKeys?: Array<string | RegExp>;
             redactedPaths?: string[];
+            maxBytes?: number;
         }
     ): string;
+    namespace stringify {
+        const supportsMaxBytes: true;
+    }
+    export default stringify;
 }

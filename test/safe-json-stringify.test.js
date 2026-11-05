@@ -264,3 +264,87 @@ describe('redaction options', function () {
     )
   })
 })
+
+describe('maxBytes', function () {
+  function bounded (value, maxBytes, options) {
+    options = options || {}
+    options.maxBytes = maxBytes
+    return safeJsonStringify(value, null, null, options)
+  }
+
+  function expectSizeError (run) {
+    var error
+    try { run() } catch (err) { error = err }
+    expect(error instanceof RangeError).toBe(true)
+    expect(error.code).toBe('ERR_JSON_SIZE')
+  }
+
+  it('supports feature detection and preserves unbounded behavior', function () {
+    expect(safeJsonStringify.supportsMaxBytes).toBe(true)
+    expect(safeJsonStringify({ value: 1 }, null, null, null)).toBe('{"value":1}')
+    expect(bounded({ message: 'hello' }, 19)).toBe('{"message":"hello"}')
+    expectSizeError(function () { bounded({ message: 'hello' }, 18) })
+  })
+
+  it('counts UTF-8 bytes and JSON escapes without allocating escaped strings', function () {
+    var cases = [['é', 4], ['漢', 5], ['😀', 6], ['\n', 4], ['\u0000', 8], ['\\', 4], ['"', 4], ['\uD800', 8]]
+    cases.forEach(function (entry) {
+      expect(bounded(entry[0], entry[1])).toBe(JSON.stringify(entry[0]))
+      expectSizeError(function () { bounded(entry[0], entry[1] - 1) })
+    })
+    expectSizeError(function () { bounded({ '漢': 'é' }, 11) })
+    expect(bounded({ '漢': 'é' }, 12)).toBe('{"漢":"é"}')
+  })
+
+  it('counts array values and container punctuation', function () {
+    var value = [null, undefined, function () {}, NaN, true, false, 100, 'x']
+    var json = JSON.stringify(value)
+    expect(bounded(value, json.length)).toBe(json)
+    expectSizeError(function () { bounded(value, json.length - 1) })
+  })
+
+  it('applies the budget after redaction without reading redacted properties', function () {
+    var value = {}
+    Object.defineProperty(value, 'secret', { enumerable: true, get: function () { throw new Error('should not be read') } })
+    expect(bounded({ data: value }, 32, { redactedPaths: ['data'], redactedKeys: ['secret'] })).toBe('{"data":{"secret":"[REDACTED]"}}')
+  })
+
+  it('stops before visiting the rest of a shallow collection', function () {
+    var reads = 0
+    var value = []
+    for (var i = 0; i < 1000; i++) {
+      Object.defineProperty(value, i, { get: function () { reads++; return 'content' } })
+    }
+    expectSizeError(function () { bounded(value, 100) })
+    expect(reads).toBeLessThan(20)
+  })
+
+  it('rejects huge values and keys before JSON.stringify', function () {
+    var huge = new Array(1000001).join('x')
+    expectSizeError(function () { bounded({ message: huge }, 100) })
+    var keyed = {}
+    keyed[huge] = 1
+    expectSizeError(function () { bounded(keyed, 100) })
+  })
+
+  it('does not swallow budget errors inside toJSON or object preparation', function () {
+    expectSizeError(function () { bounded({ toJSON: function () { return { nested: new Array(1001).join('x') } } }, 100) })
+    expectSizeError(function () { bounded({ nested: { deep: new Array(1001).join('x') } }, 100) })
+  })
+
+  it('preserves circular and throwing-getter behavior within the budget', function () {
+    var value = {}
+    value.circular = value
+    Object.defineProperty(value, 'bad', { enumerable: true, get: function () { throw new Error('oops') } })
+    expect(bounded(value, 100)).toBe('{"circular":"[Circular]","bad":"[Throws: oops]"}')
+    expectSizeError(function () { bounded(value, 20) })
+  })
+
+  it('rejects invalid limits and incompatible formatting options', function () {
+    ;[0, -1, Infinity, NaN, 1.5, '100', 9007199254740992].forEach(function (maxBytes) {
+      expect(function () { bounded({}, maxBytes) }).toThrowError(TypeError)
+    })
+    expect(function () { safeJsonStringify({}, null, 2, { maxBytes: 100 }) }).toThrowError(TypeError)
+    expect(function () { safeJsonStringify({}, function (key, value) { return value }, null, { maxBytes: 100 }) }).toThrowError(TypeError)
+  })
+})
