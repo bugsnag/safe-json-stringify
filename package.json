@@ -49,6 +49,7 @@
     "minimatch": {
       "brace-expansion": "^1.1.21"
     },
+    "qs": "^6.16.1",
     "shell-quote": "1.12.0"
   }
 }
